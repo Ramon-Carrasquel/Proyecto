@@ -136,7 +136,6 @@ class App:
             print('El apellido debe ser solo letras')
 
         email = input("Ingrese el email del usuario: ")
-
         username = input("Ingrese el username del usuario: ")
         following = []
         while True:
@@ -151,19 +150,19 @@ class App:
         while True:
           try:
             type = input("Indique si el usario es un 'Professor' o un 'Student': ")
-            if type.lower() != 'professor' or type.lower() != 'student':
+            if type.lower() == 'professor' or type.lower() == 'student':
+              break
+            else:
               raise ValueError
-            break
           except:
             print('El tipo debe ser Professor o Student')
 
-        while True:
-          if type == "professor":
-            department = input("Ingrese el departamento del usuario: ")
-          elif type == "student":
-            major = input("Ingrese la carrera del usuario: ")
-        
-        self.registrar_usuario(self, id, firstName, lastName, email, username, following, major, department)
+        if type.lower() == "professor":
+          department = input("Ingrese el departamento del usuario: ")
+          self.registrar_usuario(id, firstName, lastName, email, username, following, department=department)
+        elif type.lower() == "student":
+          major = input("Ingrese la carrera del usuario: ")
+          self.registrar_usuario(id, firstName, lastName, email, username, following, major=major)
       
       elif option == 2:
         filtro = input("Con que filtro deseas buscar el perfil, Username, Carrera o Departamento: ")
