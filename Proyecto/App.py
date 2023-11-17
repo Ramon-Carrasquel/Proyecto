@@ -27,7 +27,6 @@ class App:
       if usuario:
         nuevo_post = Post(usuario, post['multimedia'], post['caption'], post['tags'])
         self.posts.append(nuevo_post)
-        usuario.publicaciones.append(nuevo_post)
 
   def registrar_usuario(self, id, firstName, lastName, email, username, following, major=None, department=None): 
     if major: 
@@ -58,11 +57,11 @@ class App:
   def like_post(self, usuario, post):
     usuario.like_post(post)
 
-  def eliminar_comentario(self, usuario, comentario):
+  def delete_post(self, usuario, comentario):
     usuario.eliminar_comentario(comentario)
 
   def ver_perfil(self, usuario, otro_usuario):
-    return usuario.ver_perfil(otro_usuario)
+    return otro_usuario.mostrar_perfil()
 
   def eliminar_post(self, administrador, post):
     administrador.eliminar_post(post, self.posts)
@@ -83,31 +82,40 @@ class App:
     return Estadisticas.informe_moderacion(self.usuarios, self.posts)
 
   def graficar_estadisticas(self, estadisticas):
-    Estadisticas.graficar_estadisticas(estadisticas)]
+    Estadisticas.graficar_estadisticas(estadisticas)
   
-  def save_data(self):
-    with open("users.pickle", "wb+") as f:
-        pickle.dump(self.users, f)
+  def save_data_usuarios(self):
+    with open("usuarios.pickle", "wb+") as f:
+        pickle.dump(self.usuarios, f)
 
-  def read_data(self):
+  def read_data_usuarios(self):
     try:
-        with open("employees.pickle", "rb") as f:
-            self.employees = pickle.load(f)
+      with open("usuarios.pickle", "rb") as f:
+        self.usuarios = pickle.load(f)
     except:
-        print("No hay datos guardados!")
+      print("No hay datos guardados!")
 
-  
+  def save_data_publicaciones(self):
+    with open("posts.pickle", "wb+") as f:
+        pickle.dump(self.posts, f)
+
+  def read_data_publicaciones(self):
+    try:
+      with open("posts.pickle", "rb") as f:
+        self.posts = pickle.load(f)
+    except:
+      print("No hay datos guardados!")
   
   def gestion_perfil(self):
     while True:
       try:
         option = int(input("""¿Que desea hacer?
-        1) Registrar usuario
-        2) Buscar perfiles
-        3) Cambiar informacion de usuario
-        4) Borrar datos de la cuenta
-        5) Acceder a la cuenta de otra usuario
-        6) Salir
+        1. Registrar usuario
+        2. Buscar perfiles
+        3. Cambiar informacion de usuario
+        4. Borrar datos de la cuenta
+        5. Acceder a la cuenta de otra usuario
+        6. Salir
         > """))
         if option < 1 or option > 6:
           raise ValueError
@@ -138,31 +146,14 @@ class App:
         email = input("Ingrese el email del usuario: ")
         username = input("Ingrese el username del usuario: ")
         following = []
-        while True:
-          eleccion = input("Indique si quieres continuar agregar un seguidor, (S)i o (N)o: ")
-          if eleccion == "S":
-            following.append(uuid.uuid4())
-          elif eleccion == "N":
-            break
-          else:
-            print("Ingrese una opción válida")
 
-        while True:
-          try:
-            type = input("Indique si el usario es un 'Professor' o un 'Student': ")
-            if type.lower() == 'professor' or type.lower() == 'student':
-              break
-            else:
-              raise ValueError
-          except:
-            print('El tipo debe ser Professor o Student')
-
-        if type.lower() == "professor":
+        tipo = input("Indique si el usario es un 'Professor' o un 'Student': ")
+        if tipo.lower() == "professor":
           department = input("Ingrese el departamento del usuario: ")
-          self.registrar_usuario(id, firstName, lastName, email, username, following, department=department)
-        elif type.lower() == "student":
+          self.registrar_usuario(id, firstName, lastName, email, username, following, "professor", department)
+        elif tipo.lower() == "student":
           major = input("Ingrese la carrera del usuario: ")
-          self.registrar_usuario(id, firstName, lastName, email, username, following, major=major)
+          self.registrar_usuario(id, firstName, lastName, email, username, following, "student", major)      
       
       elif option == 2:
         filtro = input("Con que filtro deseas buscar el perfil, Username, Carrera o Departamento: ")
@@ -177,16 +168,26 @@ class App:
           department = input("Indique el departamento que quiere buscar: ")
           self.buscar_profesores(self.usuarios, filtro, department)
       elif option == 3:
+        tipo = input("Indique si el usario es un 'Professor' o un 'Student':")
         cambio = input("indica que informacion quieres cambiar: ")
+        if tipo.lower() == "student":
+          self.cambiar_informacion_estudiante(cambio)
+        elif tipo.lower() == "professor":
+          self.cambiar_informacion_profesor(cambio)
       elif option == 4:
         type = input("Indique el tipo de usuario, Professor o Student: ")
-        if type == "professor":
-          id = input("Indique el ID del estudiante a eliminar: ")
-          for user in self.user:
-            if user.id == id:
-              
+        if type.lower() == "student":
+          self.borrar_estudiante() 
+        elif type.lower() == "professor":
+          self.borrar_estudiante()
       elif option == 5:
-        self.ver_otro_usuario()
+          user = input("Ingrese el username del que desea ver sus posts: ")
+          for usuario in self.usuarios:
+            if usuario.username == user:
+              for post in usuario.posts:
+                print(post.show_attr())
+            else:
+              print("El usuario no existe")
       else:
         break
 
@@ -194,10 +195,10 @@ class App:
     while True:
       try:
         opcion = int(input("""¿Que desea hacer?
-        1) Registrar los datos del post
-        2) Ver posts de otros usuarios
-        3) Buscar post
-        4) Salir
+        1. Registrar los datos del post
+        2. Ver posts de otros usuarios
+        3. Buscar post
+        4. Salir
         > """))
         if opcion < 1 or opcion > 4:
           raise ValueError
@@ -206,11 +207,27 @@ class App:
         continue
 
       if opcion == 1:
-        self.registrar_post()
+        usuario = input("Indique el usuario que registra el comentario")
+        multimedia = input("Indique el tipo de multimedia, Foto o Video: ")
+        descripcion = input("Ingrese la descripcion del post: ")
+        hashtag = input("Ingrese el hashtag del post: ")
+
+        self.registrar_post(usuario, multimedia, descripcion, hashtag)
+
       elif opcion == 2:
-        self.ver_posts()
+        posts = [
+            post
+            for post in self.posts
+            if post.usuario == usuario
+        ]
+        for post in posts:
+            print(post)
       elif opcion == 3:
-        self.buscar_post()
+        filtro = input("Indique el filtro con el que desea buscar post: ")
+        valor = input("Indique el valor: ")
+        posts = self.buscar_posts(self.posts, filtro, valor)
+        for post in posts:
+            print(post)
       else:
         break
 
@@ -218,13 +235,13 @@ class App:
     while True:
       try:
         opcion = int(input("""¿Que desea hacer?
-        1) Seguir a un usuario
-        2) Dejar de seguir a un usuario
-        3) Comentar post
-        4) Dar like a un post
-        5) Eliminar un post
-        6) Acceder a perfil de otro usuario
-        7) Salir
+        1. Seguir a un usuario
+        2. Dejar de seguir a un usuario
+        3. Comentar un post
+        4. Dar like a un post
+        5. Eliminar un post
+        6. Acceder a perfil de otro usuario
+        7. Salir
         > """))
         if opcion < 1 or opcion > 7:
           raise ValueError
@@ -232,14 +249,86 @@ class App:
         print("DATO INVALIDO")
         continue
 
+      if opcion == 1:
+        usuario = input("Indique su usuario")
+        for user in self.usuarios:
+          if user.username == usuario:
+            otro_usuario = input("Ingrese el usuario que desea seguir:")
+            if user.username == otro_usuario:
+              self.seguir_usuario(user, otro_usuario)
+            else:
+              print("No encontrado")
+          else:
+            print("No encontrado")
+
+      elif opcion == 2:
+        usuario = input("Indique su usuario: ")
+        for user in self.usuarios:
+          if user.username == usuario:
+            otro_usuario = input("Ingrese el usuario que desea dejar de seguir:")
+            if user.username == otro_usuario:
+              self.dejar_de_seguir_usuario(user, otro_usuario)
+            else:
+              print("No se encontro")
+            
+      elif opcion == 3:
+        user = input("Indique su usuario: ")
+        for u in self.usuarios:
+          if u.username == user:
+            post = input("Busca el post: ")
+            for p in self.posts:
+              if p.usuario == user and p.descripcion == post:
+                comentario = input("Ingrese su comentario: ")
+                self.comentar_post(usuario, p, comentario)
+
+      elif opcion == 4:
+        usuario = input("Indique su usuario: ")
+        for user in self.usuarios:
+          if user.username == usuario:
+            post = input("Busca el post: ")
+            for p in self.posts:
+              if p.autor == usuario and p.titulo == post:
+                self.like_post(usuario, p)
+              else:
+                print("Mo encontrado")
+          else:
+            print("No encontrado")
+      
+      elif opcion == 5:
+        usuario = input("Indique su usuario: ")
+        for user in self.usuarios:
+          if user.username == usuario:
+            post = input("Busca el post: ")
+            for p in self.posts:
+              if p.autor == usuario and p.titulo == post:
+                self.delete_post(p)
+              else:
+                print("No encontrado")
+          else:
+            print("No encontraddo")
+      elif opcion == 6:
+        usuario = input("Indique su usuario: ")
+        for user in self.usuarios:
+          if user.username == usuario:
+            otro_usuario = input("Ingrese el usuario que desea ver el perfil:")
+            if user.username != otro_usuario:
+              perfil = self.ver_perfil(user, otro_usuario)
+              print(perfil)
+            else:
+              print("No se encontro")
+          else:
+            print("No se encontro")
+      else:
+        break
+
   def gestion_moderacion(self):
     while True:
       try:
         opcion = int(input("""¿Que desea hacer?
-        1)  Eliminar post
-        2) Eliminar comentario
-        3) Eliminar un usuario que infringido múltiples veces las reglas 
-        4) Salir
+        1. Eliminar post
+        2. Eliminar comentario
+        3. Eliminar un usuario que infringido múltiples veces las reglas 
+        4. Salir
         > """))
         if opcion < 1 or opcion > 4:
           raise ValueError
@@ -248,7 +337,17 @@ class App:
         continue
 
       if opcion == 1:
-        self.eliminar_post()
+        administrador = input("Indique el usuario administrador: ")
+        for user in self.usuarios:
+          if user.username == administrador:
+            post = input("Ingrese el post que desea eliminar: ")
+            for p in self.posts:
+              if p.descripcion == post:
+                self.eliminar_post(administrador, post)
+              else:
+                print("No se encontro")
+          else:
+            print("No se encontro")
       elif opcion == 2:
         self.eliminar_comentario()
       elif opcion == 3:
@@ -256,36 +355,64 @@ class App:
       else:
         break
 
-  def start(self):
-      self.save_data()
-      print("\nBienvenido a Metrogram!")
-      while True:
-        try:
-          menu = int(input("""¿Que desea hacer?
-          1) Gestion de perfil
-          2) Gestion de multimedia
-          3) Gestion de interacciones
-          4) Gestion de moderacion
-          5) Estadisticas
-          6) Salir
-          > """))
-          if menu < 1 or menu > 6:
-            raise ValueError
-        except:
-          print("DATO INVALIDO")
-          continue
+  def indicadores_gestion(self):
+    while True:
+      try:
+        opcion = int(input("""¿Que desea hacer?
+        1. Generar informes de publicaciones
+        2. Generar informes de interacción
+        3. Generar informes de moderación
+        4. Salir
+        > """))
+        if opcion < 1 or opcion > 4:
+          raise ValueError
+      except:
+        print("DATO INVALIDO")
+        continue
 
-        if menu == 1:
-          self.gestion_perfil()
-        elif menu == 2:
-          self.gestion_multimedia()
-        elif menu == 3:
-          self.gestion_interacciones()
-        elif menu == 4:
-          self.gestion_moderacion()
-        elif menu == 5:
-          self.estadisticas()
-        else:
-          self.save_data()
-          print("Gracias por usar Metrogram!")
-          break
+      if opcion == 1:
+        self.generar_informe_publicaciones()
+      elif opcion == 2:
+        self.generar_informe_interacciones()
+      elif opcion == 3:
+        self.generar_informe_moderacion()
+      else:
+        break
+
+
+  
+  def start(self):
+    self.read_data_usuarios()
+    self.read_data_publicaciones()
+    print("\nBienvenido a Metrogram!")
+    while True:
+      try:
+        menu = int(input("""¿Que desea hacer?
+          1. Gestion de perfil
+          2. Gestion de multimedia
+          3. Gestion de interacciones
+          4. Gestion de moderacion
+          5. Estadisticas
+          6. Salir
+          > """))
+        if menu < 1 or menu > 6:
+            raise ValueError
+      except:
+        print("DATO INVALIDO")
+        continue
+
+      if menu == 1:
+        self.gestion_perfil()
+      elif menu == 2:
+        self.gestion_multimedia()
+      elif menu == 3:
+        self.gestion_interacciones()
+      elif menu == 4:
+        self.gestion_moderacion()
+      elif menu == 5:
+        self.indicadores_gestion()
+      else:
+        self.save_data_usuarios()
+        self.save_data_publicaciones()
+        print("Gracias por usar Metrogram!")
+        break

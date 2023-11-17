@@ -24,8 +24,15 @@ class Post:
     return Post(usuario, multimedia, descripcion, hashtag)
 
   def mostrar_post(self):
-      if self.usuario in self.seguidos:
-          return self.usuario, self.multimedia, self.descripcion, self.hashtag, self.fecha_publicacion, self.likes, self.comentarios
+    return [
+        self.usuario,
+        self.multimedia,
+        self.descripcion,
+        self.hashtag,
+        self.fecha_publicacion,
+        self.likes,
+        self.comentarios,
+    ]
 
   @staticmethod
   def buscar_posts(posts, filtro, valor):

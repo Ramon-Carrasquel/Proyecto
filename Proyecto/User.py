@@ -1,3 +1,4 @@
+import datetime
 from Comment import Comment
 
 class User:
@@ -30,27 +31,27 @@ class User:
   
     return following
 
-
   def aprobar_seguimiento(self, otro_usuario):
     if otro_usuario in self.solicitudes:
-        self.solicitudes.remove(otro_usuario)
-        self.seguidores.append(otro_usuario)
-        otro_usuario.seguidos.append(self)
+      self.solicitudes.remove(otro_usuario)
+      self.seguidores.append(otro_usuario)
+      otro_usuario.seguidos.append(self)
 
   def dejar_de_seguir(self, otro_usuario):
     if otro_usuario in self.following:
-        self.following.remove(otro_usuario)
-        otro_usuario.following.remove(self)
+      self.following.remove(otro_usuario)
+      otro_usuario.following.remove(self)
 
-  def comentar_post(self, user, post, comment, publish_date):
-    nuevo_comentario = Comment(user, post, comment, publish_date)
+  def comentar_post(self, post, comentario):
+    nuevo_comentario = Comment(self, post, comentario, datetime.now())
     post.comentarios.append(nuevo_comentario)
 
   def like_post(self, post):
     if self in post.likes:
-        post.likes.remove(self)
+      post.likes.remove(self)
     else:
-        post.likes.append(self)
+      post.likes.append(self)
 
-  def ver_perfil(self, otro_usuario):
-    return otro_usuario.mostrar_perfil()
+  def eliminar_comentario(self, comentario):
+    if comentario in self.posts.comentarios:
+      self.posts.comentarios.remove(comentario)
