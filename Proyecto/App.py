@@ -36,6 +36,7 @@ class App:
     else:
       raise ValueError("Debe ser major o department")
     self.usuarios.append(nuevo_usuario)
+    print("Usuario ingresado correctamente")
 
   def registrar_post(self, usuario, multimedia, descripcion, hashtag):
     nuevo_post = Post.registrar_nuevo_post(usuario, multimedia, descripcion, hashtag)
@@ -83,6 +84,21 @@ class App:
 
   def graficar_estadisticas(self, estadisticas):
     Estadisticas.graficar_estadisticas(estadisticas)
+
+  def binary_search(self, y, x):
+    low = 0
+    high = len(y) - 1
+    mid = 0
+  
+    while low <= high:
+        mid = (high + low) // 2
+        if y[mid] < x:
+            low = mid + 1
+        elif y[mid] > x:
+            high = mid - 1
+        else:
+            return mid
+    return -1
   
   def save_data_usuarios(self):
     with open("usuarios.pickle", "wb+") as f:
