@@ -362,9 +362,10 @@ class App:
         1. Generar informes de publicaciones
         2. Generar informes de interacción
         3. Generar informes de moderación
-        4. Salir
+        4. Generar graficas de estadisticas
+        5. Salir
         > """))
-        if opcion < 1 or opcion > 4:
+        if opcion < 1 or opcion > 5:
           raise ValueError
       except:
         print("DATO INVALIDO")
@@ -376,6 +377,9 @@ class App:
         self.generar_informe_interacciones()
       elif opcion == 3:
         self.generar_informe_moderacion()
+      elif opcion == 4:
+        estadisticas = input("")
+        self.graficar_estadisticas(estadisticas)
       else:
         break
 
