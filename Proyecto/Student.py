@@ -22,7 +22,7 @@ class Student(User):
     return Student(id, firstName, lastName, email, username, following, major)
 
   @staticmethod
-  def buscar_profesores(usuarios, filtro, valor):
+  def buscar_estudiantes(usuarios, filtro, valor):
       return [usuario for usuario in usuarios if getattr(usuario, filtro) == valor]
   
   def cambiar_informacion_estudiante(self, id=None, firstName=None, lastName=None, email=None, username=None, following=None, major=None):

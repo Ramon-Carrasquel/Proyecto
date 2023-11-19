@@ -41,8 +41,8 @@ class App:
   def registrar_post(self, usuario, multimedia, descripcion, hashtag):
     nuevo_post = Post.registrar_nuevo_post(usuario, multimedia, descripcion, hashtag)
     self.posts.append(nuevo_post)
-    usuario.publicaciones.append(nuevo_post)
-
+           
+  
   def seguir_usuario(self, usuario, otro_usuario):
     usuario.seguir(otro_usuario)
 
@@ -174,9 +174,12 @@ class App:
       elif option == 2:
         filtro = input("Con que filtro deseas buscar el perfil, Username, Carrera o Departamento: ")
         if filtro.title() == "Username":
-          username = input("Indique el nombre de usuario que quiere buscar: ")
-          resultado1 = self.usuarios[self.binary_search(self.usuarios, username)]
-          print(resultado1.show_attr())
+          nombre_usuario = input("Indique el username: ")
+          for user in self.usuarios:
+            if user.username == nombre_usuario:
+              print(user.show_attr())
+            else:
+              print("No existe el usuario")
         elif filtro.title() == "Carrera":
           major = input("Indique la carrera que quiere buscar: ")
           self.buscar_estudiantes(self.usuarios, filtro, major)
@@ -223,12 +226,13 @@ class App:
         continue
 
       if opcion == 1:
-        usuario = input("Indique el usuario que registra el comentario")
+        usuario = input("Indique el usuario que registra el comentario: ")
         multimedia = input("Indique el tipo de multimedia, Foto o Video: ")
         descripcion = input("Ingrese la descripcion del post: ")
         hashtag = input("Ingrese el hashtag del post: ")
 
         self.registrar_post(usuario, multimedia, descripcion, hashtag)
+        print("Post registrado exitosamente!")
 
       elif opcion == 2:
         posts = [
